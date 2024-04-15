@@ -1,6 +1,7 @@
 package tailscale
 
 import (
+	"api/utils"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io"
@@ -41,21 +42,17 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Filter out IPs that do not have a netmask of "/32" for IPv4 or "/128" for IPv6
+	filteredIPs := make([]string, 0, len(user.AllowedIPs))
 	for _, ip := range user.AllowedIPs {
-		if existingIPs[ip] {
-			http.Error(w, "User already exists", http.StatusConflict)
-			return
-		}
-
-		// Filter out IPs that do not have a netmask of "/32"
-		filteredIPs := make([]string, 0, len(user.AllowedIPs))
-		for _, ip := range user.AllowedIPs {
-			if strings.HasSuffix(ip, "/32") {
-				filteredIPs = append(filteredIPs, ip)
-				user.AllowedIPs = filteredIPs
-			}
+		if utils.IsValidIPv4(ip) && strings.HasSuffix(ip, "/32") {
+			filteredIPs = append(filteredIPs, ip)
+		} else if utils.IsValidIPv6(ip) && strings.HasSuffix(ip, "/128") {
+			filteredIPs = append(filteredIPs, ip)
 		}
 	}
+
+	user.AllowedIPs = filteredIPs
 
 	h.Users = append(h.Users, user)
 

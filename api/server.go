@@ -1,6 +1,7 @@
 package main
 
 import (
+	"api/logger"
 	"api/tailscale"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -38,7 +39,7 @@ func main() {
 	addr := config.Ip + ":" + config.Port
 	server := http.Server{
 		Addr:    addr,
-		Handler: router,
+		Handler: logger.Log(router),
 	}
 
 	log.Printf("Starting server. %s:\n", addr)
