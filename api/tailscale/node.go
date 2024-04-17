@@ -7,5 +7,5 @@ type Node struct {
 	OS         string   `json:"OS"`
 	AllowedIPs []string `json:"AllowedIPs"`
 	CurAddr    string   `json:"CurAddr"`
-	Active     bool     `json:"Active"`
+	Active     string   `json:"Active"`
 }
