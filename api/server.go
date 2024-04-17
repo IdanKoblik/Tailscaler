@@ -1,34 +1,15 @@
 package main
 
 import (
+	"api/config"
 	"api/logger"
 	"api/tailscale"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"os"
 )
 
-type ServerConfig struct {
-	Ip   string `json:"ip"`
-	Port string `json:"port"`
-}
-
 func main() {
-	file, err := os.ReadFile("config.json")
-	if err != nil {
-		log.Fatal("Error reading config file: ", err)
-		return
-	}
-
-	var config ServerConfig
-	err = json.Unmarshal(file, &config)
-	if err != nil {
-		log.Fatal("Error parsing JSON: ", err)
-		return
-	}
-
 	router := mux.NewRouter()
 
 	handler := &tailscale.Handler{}
@@ -36,7 +17,12 @@ func main() {
 	router.HandleFunc("/tailscale/get_users", handler.GetAllUsers).Methods(http.MethodGet)
 	router.HandleFunc("/tailscale/find_user_by_name/{HostName}", handler.FindByHostName).Methods(http.MethodGet)
 
-	addr := config.Ip + ":" + config.Port
+	addr, err := config.GetURL()
+	if err != nil {
+		log.Fatalf("Error getting api url: %v\n", err)
+		return
+	}
+
 	server := http.Server{
 		Addr:    addr,
 		Handler: logger.Log(router),
