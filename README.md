@@ -1,3 +1,8 @@
+# Tailscaler
+
+A tailscale CLI application that allow to organize In a table tailscale users data.
+* Usefully for managing tailscale users data from multiple routes.
+* This project is for a private usage only and learning purpose.
 
 ## API Reference
 
@@ -9,7 +14,7 @@
 
 | Parameter      | Type    | Description                          |
 |------------|---------|--------------------------------------|
-| Router     | `string`  | **Required** Router information.                  |
+| Router     | `string`  | **Required** Router sender name.                  |
 | ID         | `string`  | **Required** User ID.                             |
 | HostName   | `string`  | **Required** Hostname for the user.               |
 | OS         | `string`  | Operating system of the user.        |
