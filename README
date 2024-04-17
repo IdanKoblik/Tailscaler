@@ -1,0 +1,35 @@
+
+## API Reference
+
+#### Add user to the API
+
+```http
+ POST /tailscaler/create_user
+```
+
+| Parameter      | Type    | Description                          |
+|------------|---------|--------------------------------------|
+| Router     | `string`  | **Required** Router information.                  |
+| ID         | `string`  | **Required** User ID.                             |
+| HostName   | `string`  | **Required** Hostname for the user.               |
+| OS         | `string`  | Operating system of the user.        |
+| AllowedIPs | `string array`   | List of allowed IPs for the user.    |
+| CurAddr    | `string`  | Current address of the user.         |
+| Active     | `string`  | Status of the user (active/inactive).|
+
+
+#### Get all users
+
+```http
+  GET /tailscaler/get_users
+```
+
+#### Lookup user
+
+```http
+  GET /tailscaler/find_user_by_id/{hostName}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `hostName`      | `string` | **Required**. Tailscale user hostname |
