@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"slices"
 	"tailscaler/client"
 	"tailscaler/config"
 )
@@ -15,15 +16,10 @@ func GetUsers() {
 		return
 	}
 
-	var nodePointers []*client.Node
-	for _, node := range nodes {
-		nodePointers = append(nodePointers, &node)
-	}
-
-	PrintTable(nodePointers)
+	PrintTable(nodes)
 }
 
-func getUsers() ([]client.Node, error) {
+func getUsers() ([]*TableNode, error) {
 	url, err := config.GetApiURL()
 	if err != nil {
 		log.Fatalf("Error getting API url: %v\n", err)
@@ -38,12 +34,46 @@ func getUsers() ([]client.Node, error) {
 		return nil, err
 	}
 
-	var nodes []client.Node
+	var nodes []*client.Node
 	err = json.Unmarshal(body, &nodes)
 	if err != nil {
 		fmt.Printf("Failed to unmarshal JSON response: %s\n", err)
 		return nil, err
 	}
 
-	return nodes, nil
+	var tableNodes []*TableNode
+	for _, node := range nodes {
+		found := false
+		for _, existingNode := range tableNodes {
+			if existingNode.ID == node.ID {
+				found = true
+
+				// Update if not already present
+				for _, ip := range node.AllowedIPs {
+					if !slices.Contains(existingNode.AllowedIPs, ip) {
+						existingNode.AllowedIPs = append(existingNode.AllowedIPs, ip)
+					}
+				}
+
+				existingNode.CurAddr = node.CurAddr
+				existingNode.Active = node.Active
+				break
+			}
+		}
+
+		if !found {
+			tableNode := &TableNode{
+				Connections: GetNodeConnections(nodes),
+				ID:          node.ID,
+				HostName:    node.HostName,
+				OS:          node.OS,
+				AllowedIPs:  node.AllowedIPs,
+				CurAddr:     node.CurAddr,
+				Active:      node.Active,
+			}
+			tableNodes = append(tableNodes, tableNode)
+		}
+	}
+
+	return tableNodes, nil
 }

@@ -3,10 +3,19 @@ package utils
 import (
 	"fmt"
 	"strings"
-	"tailscaler/client"
 )
 
-func calculateMaxWidths(nodes []*client.Node) (int, int, int, int, int, int) {
+type TableNode struct {
+	Connections []string
+	ID          string   `json:"ID"`
+	HostName    string   `json:"HostName"`
+	OS          string   `json:"OS"`
+	AllowedIPs  []string `json:"AllowedIPs"`
+	CurAddr     string   `json:"CurAddr"`
+	Active      string   `json:"Active"`
+}
+
+func calculateMaxWidths(nodes []*TableNode) (int, int, int, int, int, int) {
 	var (
 		maxRouterWidth     = 7
 		maxIDWidth         = 2
@@ -17,7 +26,7 @@ func calculateMaxWidths(nodes []*client.Node) (int, int, int, int, int, int) {
 	)
 
 	for _, node := range nodes {
-		maxRouterWidth = max(maxRouterWidth, len(node.Router))
+		maxRouterWidth = max(maxRouterWidth, len(strings.Join(node.Connections, ", ")))
 		maxIDWidth = max(maxIDWidth, len(node.ID))
 		maxHostNameWidth = max(maxHostNameWidth, len(node.HostName))
 		maxOSWidth = max(maxOSWidth, len(node.OS))
@@ -29,7 +38,7 @@ func calculateMaxWidths(nodes []*client.Node) (int, int, int, int, int, int) {
 	return maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, maxAllowedIPsWidth, maxCurAddrWidth
 }
 
-func PrintTable(nodes []*client.Node) {
+func PrintTable(nodes []*TableNode) {
 	if len(nodes) == 0 {
 		fmt.Println("No nodes to print.")
 		return
@@ -58,7 +67,7 @@ func printTableHeader(maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, 
 	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
 }
 
-func PrintTableRow(node *client.Node, maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, maxAllowedIPsWidth, maxCurAddrWidth int) {
+func PrintTableRow(node *TableNode, maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, maxAllowedIPsWidth, maxCurAddrWidth int) {
 	active := fmt.Sprintf("%v", node.Active)
 
 	fmt.Printf("| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
@@ -68,7 +77,7 @@ func PrintTableRow(node *client.Node, maxRouterWidth, maxIDWidth, maxHostNameWid
 		"| %-"+fmt.Sprintf("%ds", maxAllowedIPsWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxCurAddrWidth)+" "+
 		"| %-6s "+
-		"|\n", node.Router, node.ID, node.HostName, node.OS, strings.Join(node.AllowedIPs, ", "), node.CurAddr, active)
+		"|\n", strings.Join(node.Connections, ", "), node.ID, node.HostName, node.OS, strings.Join(node.AllowedIPs, ", "), node.CurAddr, active)
 
 	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
 }

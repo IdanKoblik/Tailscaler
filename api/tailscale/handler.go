@@ -93,17 +93,19 @@ func (h *Handler) FindByHostName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
+	var nodes []Node
 	for _, user := range h.Users {
 		if user.HostName == params["HostName"] {
-			w.Header().Set("Content-Type", "application/json")
-			err := json.NewEncoder(w).Encode(user)
-			if err != nil {
-				http.Error(w, "Failed to encode user data: "+err.Error(), http.StatusInternalServerError)
-				return
-			}
-			return
+			nodes = append(nodes, user)
+		} else {
+			http.Error(w, "User not found", http.StatusNotFound)
 		}
 	}
 
-	http.Error(w, "User not found", http.StatusNotFound)
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(nodes)
+	if err != nil {
+		http.Error(w, "Failed to encode user data: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
