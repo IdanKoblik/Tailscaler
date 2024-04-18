@@ -4,6 +4,26 @@ A tailscale CLI application that allow to organize In a table tailscale users da
 * Usefully for managing tailscale users data from multiple routes.
 * This project is for a private usage only and learning purpose.
 
+## Setup
+#### API setup
+Inside ```/tailscaler/api``` create ```config.json```
+file with the next information:
+```json
+{
+    "ip": "domain/api",
+    "port": "port"
+}
+
+```
+#### CLI setup
+Inside ```/tailscaler/cli``` create ```config.json```
+file with the next information:
+```json
+{
+    "apiURL": "the api url that you configured inside `/tailscaler/api/config.json`"
+}
+```
+
 ## API Reference
 
 #### Add user to the API
