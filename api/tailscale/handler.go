@@ -34,6 +34,11 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(user.HostName) == 0 || len(user.Router) == 0 || len(user.ID) == 0 {
+		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
+		return
+	}
+
 	existingIPs := make(map[string]bool)
 
 	for _, existingUser := range h.Users {
