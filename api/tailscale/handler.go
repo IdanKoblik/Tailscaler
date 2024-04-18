@@ -67,6 +67,43 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func combineUsers(users []Node) []Node {
+	combinedUsers := make(map[string]Node)
+
+	for _, user := range users {
+		key := user.HostName + user.ID
+		if existingUser, ok := combinedUsers[key]; ok {
+			// Combine AllowedIPs without duplicates
+			ipSet := make(map[string]bool)
+			for _, ip := range existingUser.AllowedIPs {
+				ipSet[ip] = true
+			}
+			for _, ip := range user.AllowedIPs {
+				ipSet[ip] = true
+			}
+
+			combinedUsers[key] = Node{
+				Router:     strings.Join([]string{existingUser.Router, user.Router}, ", "),
+				ID:         user.ID,
+				HostName:   user.HostName,
+				OS:         user.OS,
+				AllowedIPs: extractKeysFromMap(ipSet),
+				CurAddr:    user.CurAddr,
+				Active:     user.Active,
+			}
+		} else {
+			combinedUsers[key] = user
+		}
+	}
+
+	var uniqueUsers []Node
+	for _, user := range combinedUsers {
+		uniqueUsers = append(uniqueUsers, user)
+	}
+
+	return uniqueUsers
+}
+
 func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
@@ -78,8 +115,10 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	uniqueUsers := combineUsers(h.Users)
+
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(h.Users)
+	err := json.NewEncoder(w).Encode(uniqueUsers)
 	if err != nil {
 		http.Error(w, "Failed to encode users data: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -93,19 +132,34 @@ func (h *Handler) FindByHostName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-	var nodes []Node
+	var filteredUsers []Node
+
 	for _, user := range h.Users {
 		if user.HostName == params["HostName"] {
-			nodes = append(nodes, user)
-		} else {
-			http.Error(w, "User not found", http.StatusNotFound)
+			filteredUsers = append(filteredUsers, user)
 		}
 	}
 
+	if len(filteredUsers) == 0 {
+		http.Error(w, "Users with the specified host name not found", http.StatusNotFound)
+		return
+	}
+
+	uniqueUsers := combineUsers(filteredUsers)
+
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(nodes)
+	err := json.NewEncoder(w).Encode(uniqueUsers[len(uniqueUsers)-1])
 	if err != nil {
 		http.Error(w, "Failed to encode user data: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+// Helper function to extract keys from a map
+func extractKeysFromMap(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
 }

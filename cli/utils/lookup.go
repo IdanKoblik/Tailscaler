@@ -4,29 +4,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"slices"
 	"tailscaler/client"
 	"tailscaler/config"
 )
 
 func LookupUser(hostName string) {
-	nodes, err := getUser(hostName)
+	node, err := getUser(hostName)
 	if err != nil {
 		log.Fatalf("Error getting user: %s :: %v\n", hostName, err)
 		return
 	}
 
-	var tableNodes []*TableNode
-	tableNodes = append(tableNodes, &nodes)
+	var nodes []*client.Node
+	nodes = append(nodes, &node)
 
-	PrintTable(tableNodes)
+	PrintTable(nodes)
 }
 
-func getUser(hostName string) (TableNode, error) {
+func getUser(hostName string) (client.Node, error) {
 	url, err := config.GetApiURL()
 	if err != nil {
 		log.Fatalf("Error getting API url: %v\n", err)
-		return TableNode{}, err
+		return client.Node{}, err
 	}
 
 	apiURL := fmt.Sprintf("%s/tailscale/find_user_by_name/%s", url, hostName)
@@ -34,52 +33,15 @@ func getUser(hostName string) (TableNode, error) {
 	body, err := client.CreateRequest(apiURL)
 	if err != nil {
 		log.Fatalf("Failed to get request: %v\n", err)
-		return TableNode{}, err
+		return client.Node{}, err
 	}
 
-	var nodes []*client.Node
-	err = json.Unmarshal(body, &nodes)
+	var node client.Node
+	err = json.Unmarshal(body, &node)
 	if err != nil {
 		fmt.Printf("Failed to unmarshal JSON response: %s\n", err)
-		return TableNode{}, err
+		return client.Node{}, err
 	}
 
-	var id string
-	var hostname string
-	var os string
-	var curAddr string
-	var active string
-	var allowedIPs []string
-
-	for _, node := range nodes {
-		id = node.ID
-		hostname = node.HostName
-		os = node.OS
-
-		if len(node.CurAddr) != 0 {
-			curAddr = node.CurAddr
-		}
-
-		if len(node.Active) != 0 {
-			active = node.Active
-		}
-
-		for _, ip := range node.AllowedIPs {
-			if !slices.Contains(allowedIPs, ip) {
-				allowedIPs = append(allowedIPs, ip)
-			}
-		}
-	}
-
-	tableNode := TableNode{
-		Connections: GetNodeConnections(nodes),
-		ID:          id,
-		HostName:    hostname,
-		OS:          os,
-		AllowedIPs:  allowedIPs,
-		CurAddr:     curAddr,
-		Active:      active,
-	}
-
-	return tableNode, nil
+	return node, nil
 }
