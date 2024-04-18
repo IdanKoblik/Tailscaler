@@ -6,9 +6,21 @@ import (
 	"tailscaler/client"
 )
 
+type Table struct {
+	Connection1 string
+	Connection2 string
+	Connection3 string
+	ID          string
+	HostName    string
+	OS          string
+	AllowedIPs  []string
+	CurAddr     string
+	Active      string
+}
+
 func calculateMaxWidths(nodes []*client.Node) (int, int, int, int, int, int) {
 	var (
-		maxRouterWidth     = 19
+		maxRouterWidth     = 12
 		maxIDWidth         = 2
 		maxHostNameWidth   = 8
 		maxOSWidth         = 3
@@ -44,31 +56,75 @@ func PrintTable(nodes []*client.Node) {
 }
 
 func printTableHeader(maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, maxAllowedIPsWidth, maxCurAddrWidth int) {
-	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
+	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
 
 	fmt.Printf("| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
+		"| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
+		"| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxIDWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxHostNameWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxOSWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxAllowedIPsWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxCurAddrWidth)+" "+
 		"| Active "+
-		"|\n", "Connected routeres", "ID", "NodeName", "OS", "TailscaleIps", "Public IP")
+		"|\n", "Router1", "Router2", "Router3", "ID", "NodeName", "OS", "TailscaleIps", "Public IP")
 
-	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
+	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
 }
 
 func PrintTableRow(node *client.Node, maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, maxAllowedIPsWidth, maxCurAddrWidth int) {
 	active := fmt.Sprintf("%v", node.Active)
+	var connection1, connection2, connection3 string
+	routerToConnection := map[string]*string{
+		"Router1": &connection1,
+		"Router2": &connection2,
+		"Router3": &connection3,
+	}
+
+	if conn, exists := routerToConnection[node.Router]; exists {
+		*conn = node.Router
+	}
+
+	table := Table{
+		Connection1: connection1,
+		Connection2: connection2,
+		Connection3: connection3,
+		ID:          node.ID,
+		HostName:    node.HostName,
+		OS:          node.OS,
+		AllowedIPs:  node.AllowedIPs,
+		CurAddr:     node.CurAddr,
+		Active:      active,
+	}
 
 	fmt.Printf("| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
+		"| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
+		"| %-"+fmt.Sprintf("%ds", maxRouterWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxIDWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxHostNameWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxOSWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxAllowedIPsWidth)+" "+
 		"| %-"+fmt.Sprintf("%ds", maxCurAddrWidth)+" "+
 		"| %-6s "+
-		"|\n", node.Router, node.ID, node.HostName, node.OS, strings.Join(node.AllowedIPs, ", "), node.CurAddr, active)
+		"|\n",
+		table.Connection1,
+		table.Connection2,
+		table.Connection3,
+		table.ID,
+		table.HostName,
+		table.OS,
+		strings.Join(table.AllowedIPs, ", "),
+		table.CurAddr,
+		active,
+	)
 
-	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
+	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
+}
+
+func max(x, y int) int {
+	if x > y {
+		return x
+	}
+
+	return y
 }

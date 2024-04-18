@@ -27,29 +27,16 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	var user Node
-	err = json.Unmarshal(body, &user)
+	var newUser Node
+	err = json.Unmarshal(body, &newUser)
 	if err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
 
-	if len(user.HostName) == 0 || len(user.Router) == 0 || len(user.ID) == 0 {
-		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
-		return
-	}
-
-	existingIPs := make(map[string]bool)
-
-	for _, existingUser := range h.Users {
-		for _, existingIP := range existingUser.AllowedIPs {
-			existingIPs[existingIP] = true
-		}
-	}
-
 	// Filter out IPs that do not have a netmask of "/32" for IPv4 or "/128" for IPv6
-	filteredIPs := make([]string, 0, len(user.AllowedIPs))
-	for _, ip := range user.AllowedIPs {
+	filteredIPs := make([]string, 0, len(newUser.AllowedIPs))
+	for _, ip := range newUser.AllowedIPs {
 		if utils.IsValidIPv4(ip) && strings.HasSuffix(ip, "/32") {
 			filteredIPs = append(filteredIPs, ip)
 		} else if utils.IsValidIPv6(ip) && strings.HasSuffix(ip, "/128") {
@@ -57,11 +44,19 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	user.AllowedIPs = filteredIPs
+	newUser.AllowedIPs = filteredIPs
 
-	h.Users = append(h.Users, user)
+	// Remove the old data if a user with the same hostname and router exists
+	for i, existingUser := range h.Users {
+		if existingUser.HostName == newUser.HostName && existingUser.Router == newUser.Router {
+			h.Users = append(h.Users[:i], h.Users[i+1:]...)
+			break
+		}
+	}
 
-	log.Printf("Received Node data: %+v\n", user)
+	h.Users = append(h.Users, newUser)
+
+	log.Printf("Received Node data: %+v\n", newUser)
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
@@ -70,43 +65,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed receiving data:"+err.Error(), http.StatusBadRequest)
 		return
 	}
-}
-
-func combineUsers(users []Node) []Node {
-	combinedUsers := make(map[string]Node)
-
-	for _, user := range users {
-		key := user.HostName + user.ID
-		if existingUser, ok := combinedUsers[key]; ok {
-			// Combine AllowedIPs without duplicates
-			ipSet := make(map[string]bool)
-			for _, ip := range existingUser.AllowedIPs {
-				ipSet[ip] = true
-			}
-			for _, ip := range user.AllowedIPs {
-				ipSet[ip] = true
-			}
-
-			combinedUsers[key] = Node{
-				Router:     strings.Join([]string{existingUser.Router, user.Router}, ", "),
-				ID:         user.ID,
-				HostName:   user.HostName,
-				OS:         user.OS,
-				AllowedIPs: extractKeysFromMap(ipSet),
-				CurAddr:    user.CurAddr,
-				Active:     user.Active,
-			}
-		} else {
-			combinedUsers[key] = user
-		}
-	}
-
-	var uniqueUsers []Node
-	for _, user := range combinedUsers {
-		uniqueUsers = append(uniqueUsers, user)
-	}
-
-	return uniqueUsers
 }
 
 func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -120,10 +78,8 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uniqueUsers := combineUsers(h.Users)
-
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(uniqueUsers)
+	err := json.NewEncoder(w).Encode(h.Users)
 	if err != nil {
 		http.Error(w, "Failed to encode users data: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -137,34 +93,23 @@ func (h *Handler) FindByHostName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-	var filteredUsers []Node
+	var matchedUsers []Node
 
 	for _, user := range h.Users {
 		if user.HostName == params["HostName"] {
-			filteredUsers = append(filteredUsers, user)
+			matchedUsers = append(matchedUsers, user)
 		}
 	}
 
-	if len(filteredUsers) == 0 {
-		http.Error(w, "Users with the specified host name not found", http.StatusNotFound)
+	if len(matchedUsers) == 0 {
+		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
-	uniqueUsers := combineUsers(filteredUsers)
-
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(uniqueUsers[len(uniqueUsers)-1])
+	err := json.NewEncoder(w).Encode(matchedUsers)
 	if err != nil {
 		http.Error(w, "Failed to encode user data: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-// Helper function to extract keys from a map
-func extractKeysFromMap(m map[string]bool) []string {
-	keys := make([]string, 0, len(m))
-	for key := range m {
-		keys = append(keys, key)
-	}
-	return keys
 }
