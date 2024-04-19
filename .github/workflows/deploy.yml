@@ -131,18 +131,17 @@ jobs:
         run: ls -la
 
       - name: Upload API Release Artifact
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          asset_path: ./api-binaries.zip
-          asset_name: api-binaries-${{ github.run_number }}.zip
-          asset_content_type: application/zip
+          name: api
+          path: ./cli-binaries.zip
 
       - name: Upload CLI Release Artifact
         uses: actions/upload-artifact@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          name: artifacts
-          path:  ./cli-binaries.zip
+          name: cli
+          path: ./cli-binaries.zip
