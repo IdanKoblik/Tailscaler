@@ -1,0 +1,90 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions: write-all
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.2'
+
+      - name: Build API
+        working-directory: ./api
+        run: go build
+
+      - name: Test API
+        working-directory: ./api
+        run: go test -v ./...
+
+      - name: Build CLI
+        working-directory: ./cli
+        run: go build
+
+      - name: Test CLI
+        working-directory: ./cli
+        run: go test -v ./...
+
+  build-for-release:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.2'
+
+      - name: Build API for Windows
+        working-directory: ./api
+        run: GOOS=windows GOARCH=amd64 go build -o api.exe
+
+      - name: Build API for macOS
+        working-directory: ./api
+        run: GOOS=darwin GOARCH=amd64 go build -o api_mac
+
+      - name: Build API for Linux
+        working-directory: ./api
+        run: GOOS=linux GOARCH=amd64 go build -o api_linux
+
+      - name: Build CLI for Windows
+        working-directory: ./cli
+        run: GOOS=windows GOARCH=amd64 go build -o cli.exe
+
+      - name: Build CLI for macOS
+        working-directory: ./cli
+        run: GOOS=darwin GOARCH=amd64 go build -o cli_mac
+
+      - name: Build CLI for Linux
+        working-directory: ./cli
+        run: GOOS=linux GOARCH=amd64 go build -o cli_linux
+
+      - name: Binaries
+        uses: IdanKoblik/action-automatic-releases@v0.2
+        with:
+          repo_token: "${{ secrets.TOKEN }}"
+          prerelease: false
+          automatic_release_tag: "${{ github.run_number }}"
+          title: Binaries assets
+          files: |
+            ./api/api.exe
+            ./api/api_mac
+            ./api/api_linux
+            ./cli/cli.exe
+            ./cli/cli_mac
+            ./cli/cli_linux
