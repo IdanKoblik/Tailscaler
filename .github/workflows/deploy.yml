@@ -1,6 +1,3 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
 name: Build
 
 on:
@@ -36,7 +33,7 @@ jobs:
         working-directory: ./cli
         run: go test -v ./...
 
-  create-release:
+  build-for-release:
     runs-on: ubuntu-latest
     needs: build-and-test
     permissions:
@@ -48,44 +45,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Generate tag
-        id: generate_tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        run: |
-          TAG_NAME="v1.0.${{ github.run_number }}"
-          echo "Generated TAG_NAME=${TAG_NAME}"
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
-          echo "Pushed tag ${TAG_NAME} to origin"
-
-      - name: List tags
-        run: git tag -l
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: Release ${{ env.TAG_NAME }}
-          draft: false
-          prerelease: false
+          go-version: '1.22.2'
 
-      - name: Debug Create Release Output
-        run: echo "${{ steps.create_release.outputs }}"
+      - name: Build API for Windows
+        working-directory: ./api
+        run: GOOS=windows GOARCH=amd64 go build -o api.exe
 
-      - name: Upload Release Artifact
+      - name: Build API for macOS
+        working-directory: ./api
+        run: GOOS=darwin GOARCH=amd64 go build -o api_mac
+
+      - name: Build API for Linux
+        working-directory: ./api
+        run: GOOS=linux GOARCH=amd64 go build -o api_linux
+
+      - name: Build CLI for Windows
+        working-directory: ./cli
+        run: GOOS=windows GOARCH=amd64 go build -o cli.exe
+
+      - name: Build CLI for macOS
+        working-directory: ./cli
+        run: GOOS=darwin GOARCH=amd64 go build -o cli_mac
+
+      - name: Build CLI for Linux
+        working-directory: ./cli
+        run: GOOS=linux GOARCH=amd64 go build -o cli_linux
+
+      - name: Zip API binaries
+        run: zip api-binaries.zip ./api/api.exe ./api/api_mac ./api/api_linux
+
+      - name: Zip CLI binaries
+        run: zip cli-binaries.zip ./cli/cli.exe ./cli/cli_mac ./cli/cli_linux
+
+      - name: Upload API Release Artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          working-directory: ./api
-          asset_path: ./api
-          asset_name: api-${{ env.TAG_NAME }}.zip
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./api-binaries.zip
+          asset_name: api-binaries-${{ github.run_number }}.zip
           asset_content_type: application/zip
 
       - name: Upload CLI Release Artifact
@@ -93,8 +95,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          working-directory: ./cli
-          asset_path: ./cli
-          asset_name: cli-${{ env.TAG_NAME }}.zip
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./cli-binaries.zip
+          asset_name: cli-binaries-${{ github.run_number }}.zip
           asset_content_type: application/zip
