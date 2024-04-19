@@ -136,7 +136,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           name: api
-          path: ./cli/cli_linux
+          path: ./api-binaries.zip
 
       - name: Upload CLI Release Artifact
         uses: actions/upload-artifact@v3.1.0
@@ -144,4 +144,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           name: cli
-          path: cli-binaries.zip
+          path: ./cli-binaries.zip
+      - name: Test
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.YOUR-GITHUB-TOKEN }}"
+          automatic_release_tag: "${{ github.run_number }}"
+          title: "Automated Build ${{ github.run_number }}"
+          prerelease: true
+          files: ./cli-binaries.zip
