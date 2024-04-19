@@ -122,21 +122,17 @@ jobs:
         run: zip cli-binaries.zip ./cli/cli.exe ./cli/cli_mac ./cli/cli_linux
 
       - name: Upload API Release Artifact
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./api-binaries.zip
-          asset_name: api-binaries-${{ github.run_number }}.zip
-          asset_content_type: application/zip
+          name: artifacts
+          path: ./api-binaries.zip
 
       - name: Upload CLI Release Artifact
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cli-binaries.zip
-          asset_name: cli-binaries-${{ github.run_number }}.zip
-          asset_content_type: application/zip
+          name: artifacts
+          path: ./cli-binaries.zip
