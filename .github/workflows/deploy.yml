@@ -144,4 +144,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           name: cli
-          path: ./cli-binaries.zip
+          path: cli-binaries.zip
