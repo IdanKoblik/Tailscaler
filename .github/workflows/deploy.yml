@@ -115,41 +115,22 @@ jobs:
         working-directory: ./cli
         run: GOOS=linux GOARCH=amd64 go build -o cli_linux
 
-      - name: Zip API binaries
-        run: zip api-binaries.zip ./api/api.exe ./api/api_mac ./api/api_linux
-
-      - name: Zip CLI binaries
-        run: zip cli-binaries.zip ./cli/cli.exe ./cli/cli_mac ./cli/cli_linux
-
-      - name: Debug API Binary Files
-        run: ls -la ./api
-
-      - name: Debug CLI Binary Files
-        run: ls -la ./cli
-
-      - name: List Contents of Working Directory
-        run: ls -la
-
-      - name: Upload API Release Artifact
-        uses: actions/upload-artifact@v3.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: api
-          path: ./api-binaries.zip
-
-      - name: Upload CLI Release Artifact
-        uses: actions/upload-artifact@v3.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: cli
-          path: ./cli-binaries.zip
-      - name: Test
+      - name: Release binaries api
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.TOKEN }}"
-          automatic_release_tag: "${{ github.run_number }}"
-          title: "Automated Build ${{ github.run_number }}"
-          prerelease: true
-          files: ./cli-binaries.zip
+          API binaries: "${{ github.run_number }}"
+          files: |
+            ./api/api.exe
+            ./api/api_mac
+            ./api/api_linux
+
+      - name: Release binaries cli
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.TOKEN }}"
+          CLI binaries: "${{ github.run_number }}"
+          files: |
+            ./cli/cli.exe
+            ./cli/cli_mac
+            ./cli/cli_linux
