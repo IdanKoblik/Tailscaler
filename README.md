@@ -20,7 +20,7 @@ Inside ```/tailscaler/cli``` create ```config.json```
 file with the next information:
 ```json
 {
-    "apiURL": "the api url that you configured inside `/tailscaler/api/config.json`"
+    "apiURL": "the api url that you configured inside `/tailscaler/api/test_config.json`"
 }
 ```
 

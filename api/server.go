@@ -28,7 +28,7 @@ func main() {
 		Handler: logger.Log(router),
 	}
 
-	log.Printf("Starting server. %s:\n", addr)
+	log.Printf("Starting server. %s\n", addr)
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Error acure while trying to listen and server to the server: %v\n", err)
