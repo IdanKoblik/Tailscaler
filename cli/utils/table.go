@@ -21,7 +21,7 @@ type Table struct {
 
 func calculateMaxWidths(nodes []*client.Node) (int, int, int, int, int, int) {
 	var (
-		maxRouterWidth     = 12
+		maxRouterWidth     = 9
 		maxIDWidth         = 2
 		maxHostNameWidth   = 8
 		maxOSWidth         = 3
@@ -83,7 +83,9 @@ func PrintTableRow(node *client.Node, maxRouterWidth, maxIDWidth, maxHostNameWid
 	}
 
 	if conn, exists := routerToConnection[node.Router]; exists {
-		*conn = node.Router
+		//*conn = node.Router
+		// \033[92m - Green color
+		*conn = "\033[92mConnected\033[0m"
 	}
 
 	table := Table{
