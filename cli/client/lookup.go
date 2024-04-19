@@ -10,7 +10,7 @@ import (
 func LookupNode(hostName string) ([]*Node, error) {
 	nodes, err := getNode(hostName)
 	if err != nil {
-		log.Fatalf("Error getting user: %s :: %v\n", hostName, err)
+		log.Fatalf("Error getting nodes: %s :: %v\n", hostName, err)
 		return nil, err
 	}
 
@@ -24,7 +24,7 @@ func getNode(hostName string) ([]*Node, error) {
 		return nil, err
 	}
 
-	apiURL := fmt.Sprintf("%s/tailscale/find_user_by_name/%s", url, hostName)
+	apiURL := fmt.Sprintf("%s/tailscale/find_node_by_name/%s", url, hostName)
 
 	body, err := createRequest(apiURL)
 	if err != nil {

@@ -23,8 +23,8 @@ const HEADER = "$$$$$$$$\\  $$$$$$\\  $$$$$$\\ $$\\       $$$$$$\\   $$$$$$\\   
 func main() {
 	fmt.Println(HEADER)
 	fmt.Println("Welcome to Tailscaler please select an option: ")
-	fmt.Println("1) Get users")
-	fmt.Println("2) Lookup user")
+	fmt.Println("1) Get nodes")
+	fmt.Println("2) Lookup node")
 	fmt.Println("3) EXIT")
 
 	var option int

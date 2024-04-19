@@ -11,10 +11,10 @@ import (
 )
 
 type Handler struct {
-	Users []Node
+	Nodes []Node
 }
 
-func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateNode(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
 		return
@@ -27,16 +27,16 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	var newUser Node
-	err = json.Unmarshal(body, &newUser)
+	var newNode Node
+	err = json.Unmarshal(body, &newNode)
 	if err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
 
 	// Filter out IPs that do not have a netmask of "/32" for IPv4 or "/128" for IPv6
-	filteredIPs := make([]string, 0, len(newUser.AllowedIPs))
-	for _, ip := range newUser.AllowedIPs {
+	filteredIPs := make([]string, 0, len(newNode.AllowedIPs))
+	for _, ip := range newNode.AllowedIPs {
 		if utils.IsValidIPv4(ip) && strings.HasSuffix(ip, "/32") {
 			filteredIPs = append(filteredIPs, ip)
 		} else if utils.IsValidIPv6(ip) && strings.HasSuffix(ip, "/128") {
@@ -44,19 +44,19 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	newUser.AllowedIPs = filteredIPs
+	newNode.AllowedIPs = filteredIPs
 
-	// Remove the old data if a user with the same hostname and router exists
-	for i, existingUser := range h.Users {
-		if existingUser.HostName == newUser.HostName && existingUser.Router == newUser.Router {
-			h.Users = append(h.Users[:i], h.Users[i+1:]...)
+	// Remove the old data if a node with the same hostname and router exists
+	for i, existingNode := range h.Nodes {
+		if existingNode.HostName == newNode.HostName && existingNode.Router == newNode.Router {
+			h.Nodes = append(h.Nodes[:i], h.Nodes[i+1:]...)
 			break
 		}
 	}
 
-	h.Users = append(h.Users, newUser)
+	h.Nodes = append(h.Nodes, newNode)
 
-	log.Printf("Received Node data: %+v\n", newUser)
+	log.Printf("Received Node data: %+v\n", newNode)
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
@@ -67,49 +67,49 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAllNodes(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if len(h.Users) == 0 {
-		http.Error(w, "Users not found", http.StatusNotFound)
+	if len(h.Nodes) == 0 {
+		http.Error(w, "Nodes not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(h.Users)
+	err := json.NewEncoder(w).Encode(h.Nodes)
 	if err != nil {
-		http.Error(w, "Failed to encode users data: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to encode nodes data: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (h *Handler) FindByHostName(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) FindNodeByHostName(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
 	params := mux.Vars(r)
-	var matchedUsers []Node
+	var matchedNodes []Node
 
-	for _, user := range h.Users {
-		if user.HostName == params["HostName"] {
-			matchedUsers = append(matchedUsers, user)
+	for _, node := range h.Nodes {
+		if node.HostName == params["HostName"] {
+			matchedNodes = append(matchedNodes, node)
 		}
 	}
 
-	if len(matchedUsers) == 0 {
-		http.Error(w, "User not found", http.StatusNotFound)
+	if len(matchedNodes) == 0 {
+		http.Error(w, "Node not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(matchedUsers)
+	err := json.NewEncoder(w).Encode(matchedNodes)
 	if err != nil {
-		http.Error(w, "Failed to encode user data: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to encode node data: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

@@ -10,7 +10,7 @@ import (
 func GetNodes() ([]*Node, error) {
 	nodes, err := getNodes()
 	if err != nil {
-		log.Fatalf("Error getting users: %v\n", err)
+		log.Fatalf("Error getting nodes: %v\n", err)
 		return nil, err
 	}
 
@@ -24,7 +24,7 @@ func getNodes() ([]*Node, error) {
 		return nil, err
 	}
 
-	apiURL := url + "/tailscale/get_users"
+	apiURL := url + "/tailscale/get_nodes"
 
 	body, err := createRequest(apiURL)
 	if err != nil {

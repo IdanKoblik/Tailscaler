@@ -13,9 +13,9 @@ func main() {
 	router := mux.NewRouter()
 
 	handler := &tailscale.Handler{}
-	router.HandleFunc("/tailscale/create_user", handler.CreateUser).Methods(http.MethodPost)
-	router.HandleFunc("/tailscale/get_users", handler.GetAllUsers).Methods(http.MethodGet)
-	router.HandleFunc("/tailscale/find_user_by_name/{HostName}", handler.FindByHostName).Methods(http.MethodGet)
+	router.HandleFunc("/tailscale/create_node", handler.CreateNode).Methods(http.MethodPost)
+	router.HandleFunc("/tailscale/get_nodes", handler.GetAllNodes).Methods(http.MethodGet)
+	router.HandleFunc("/tailscale/find_node_by_name/{HostName}", handler.FindNodeByHostName).Methods(http.MethodGet)
 
 	addr, err := config.GetApiURL()
 	if err != nil {
