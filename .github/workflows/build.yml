@@ -19,13 +19,17 @@ jobs:
           go-version: '1.22.2'
 
       - name: Build API
-        run: go build ./api/...
+        working-directory: ./api
+        run: go build
 
       - name: Test API
-        run: go test ./api/... -v
+        working-directory: ./api
+        run: go test -v ./...
 
       - name: Build CLI
-        run: go build ./cli/...
+        working-directory: ./cli
+        run: go build
 
       - name: Test CLI
-        run: go test ./cli/... -v
+        working-directory: ./cli
+        run: go test -v ./...
