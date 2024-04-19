@@ -83,7 +83,6 @@ func PrintTableRow(node *client.Node, maxRouterWidth, maxIDWidth, maxHostNameWid
 	}
 
 	if conn, exists := routerToConnection[node.Router]; exists {
-		//*conn = node.Router
 		// \033[92m - Green color
 		*conn = "\033[92mConnected\033[0m"
 	}
