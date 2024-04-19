@@ -93,75 +93,56 @@ jobs:
 
       - name: Build API for Windows
         working-directory: ./api
-        uses: actions/upload-artifact@v3.1.0
         run: GOOS=windows GOARCH=amd64 go build -o api.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: windows-api
-          path: api.exe
 
       - name: Build API for macOS
         working-directory: ./api
-        uses: actions/upload-artifact@v3.1.0
         run: GOOS=darwin GOARCH=amd64 go build -o api_mac
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: mac-api
-          path: api_mac
 
       - name: Build API for Linux
         working-directory: ./api
-        uses: actions/upload-artifact@v3.1.0
         run: GOOS=linux GOARCH=amd64 go build -o api_linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: linux-api
-          path: api_linux
 
       - name: Build CLI for Windows
         working-directory: ./cli
-        uses: actions/upload-artifact@v3.1.0
         run: GOOS=windows GOARCH=amd64 go build -o cli.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: windows-cli
-          path: cli.exe
 
       - name: Build CLI for macOS
         working-directory: ./cli
-        uses: actions/upload-artifact@v3.1.0
         run: GOOS=darwin GOARCH=amd64 go build -o cli_mac
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          name: mac-cli
-          path: cli_mac
 
       - name: Build CLI for Linux
         working-directory: ./cli
-        uses: actions/upload-artifact@v3.1.0
         run: GOOS=linux GOARCH=amd64 go build -o cli_linux
+
+      - name: Zip API binaries
+        run: zip api-binaries.zip ./api/api.exe ./api/api_mac ./api/api_linux
+
+      - name: Zip CLI binaries
+        run: zip cli-binaries.zip ./cli/cli.exe ./cli/cli_mac ./cli/cli_linux
+
+      - name: Debug API Binary Files
+        run: ls -la ./api
+
+      - name: Debug CLI Binary Files
+        run: ls -la ./cli
+
+      - name: List Contents of Working Directory
+        run: ls -la
+
+      - name: Upload API Release Artifact
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          name: linux-cli
-          path: cli_linux
-
-      - name: Upload API Release Artifact
-        uses: actions/upload-artifact@v3.1.0
-
-        with:
-          name: api-artifacts  # Unique name for API artifacts
-          path: ./api-binaries.zip
+          asset_path: ./api-binaries.zip
+          asset_name: api-binaries-${{ github.run_number }}.zip
+          asset_content_type: application/zip
 
       - name: Upload CLI Release Artifact
         uses: actions/upload-artifact@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          name: cli-artifacts  # Unique name for CLI artifacts
-          path: ./cli-binaries.zip
+          name: artifacts
+          path:  ./cli-binaries.zip
