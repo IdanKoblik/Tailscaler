@@ -7,6 +7,8 @@ on:
   push:
     branches: [ "7-cicd" ]
 
+permissions: write-all
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
