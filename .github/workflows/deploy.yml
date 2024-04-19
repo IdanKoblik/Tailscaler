@@ -45,7 +45,7 @@ jobs:
       - name: Generate tag
         id: generate_tag
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GITHUB_TOKEN: ${{ github.secret }}
         run: |
           TAG_NAME="v1.0.${{ github.run_number }}"
           echo "Generated TAG_NAME=${TAG_NAME}"
@@ -61,7 +61,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GITHUB_TOKEN: ${{ github.secret }}
         with:
           tag_name: ${{ env.TAG_NAME }}
           release_name: Release ${{ env.TAG_NAME }}
@@ -74,7 +74,7 @@ jobs:
       - name: Upload Release Artifact
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GITHUB_TOKEN: ${{ github.secret }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./api/api
@@ -84,7 +84,7 @@ jobs:
       - name: Upload CLI Release Artifact
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GITHUB_TOKEN: ${{ github.secret }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./cli/cli
