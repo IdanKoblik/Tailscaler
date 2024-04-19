@@ -61,4 +61,4 @@ file with the next information:
 ***
 
 #### Routing system
-![image](https://raw.githubusercontent.com/IdanKoblik/Tailscaler/main/assets/router.png?token=GHSAT0AAAAAACOISCMXWHPGX5UB75UU73FIZRCHCJA)
+![image](https://raw.githubusercontent.com/IdanKoblik/Tailscaler/main/assets/router.png?token=GHSAT0AAAAAACOISCMXKZAUIAG3SCSX4RUAZRCIARQ)
