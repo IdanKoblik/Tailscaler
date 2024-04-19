@@ -74,7 +74,7 @@ jobs:
         working-directory: ./cli
         run: GOOS=linux GOARCH=amd64 go build -o cli_linux
 
-      - name: API binaries
+      - name: Binaries
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.TOKEN }}"
@@ -83,14 +83,6 @@ jobs:
             ./api/api.exe
             ./api/api_mac
             ./api/api_linux
-
-      - name: CLI binaries
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: "${{ secrets.TOKEN }}"
-          automatic_release_tag: "${{ github.run_number }}"
-          skip_changelog: true
-          files: |
             ./cli/cli.exe
             ./cli/cli_mac
             ./cli/cli_linux
