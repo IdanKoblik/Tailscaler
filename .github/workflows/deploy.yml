@@ -39,6 +39,11 @@ jobs:
     needs: build-and-test
 
     steps:
+      - name: Set up Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
       - name: Generate tag
         id: generate_tag
         run: |
