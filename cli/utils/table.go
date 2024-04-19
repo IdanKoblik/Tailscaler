@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"tailscaler/client"
+	"tailscaler/math"
 )
 
 type Table struct {
@@ -29,13 +30,13 @@ func calculateMaxWidths(nodes []*client.Node) (int, int, int, int, int, int) {
 	)
 
 	for _, node := range nodes {
-		maxRouterWidth = max(maxRouterWidth, len(node.Router))
-		maxIDWidth = max(maxIDWidth, len(node.ID))
-		maxHostNameWidth = max(maxHostNameWidth, len(node.HostName))
-		maxOSWidth = max(maxOSWidth, len(node.OS))
+		maxRouterWidth = math.Max(maxRouterWidth, len(node.Router))
+		maxIDWidth = math.Max(maxIDWidth, len(node.ID))
+		maxHostNameWidth = math.Max(maxHostNameWidth, len(node.HostName))
+		maxOSWidth = math.Max(maxOSWidth, len(node.OS))
 		ips := len(strings.Join(node.AllowedIPs, ", "))
-		maxAllowedIPsWidth = max(maxAllowedIPsWidth, ips)
-		maxCurAddrWidth = max(maxCurAddrWidth, len(node.CurAddr))
+		maxAllowedIPsWidth = math.Max(maxAllowedIPsWidth, ips)
+		maxCurAddrWidth = math.Max(maxCurAddrWidth, len(node.CurAddr))
 	}
 
 	return maxRouterWidth, maxIDWidth, maxHostNameWidth, maxOSWidth, maxAllowedIPsWidth, maxCurAddrWidth
@@ -119,12 +120,4 @@ func PrintTableRow(node *client.Node, maxRouterWidth, maxIDWidth, maxHostNameWid
 	)
 
 	fmt.Println("+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxRouterWidth+2) + "+" + strings.Repeat("-", maxIDWidth+2) + "+" + strings.Repeat("-", maxHostNameWidth+2) + "+" + strings.Repeat("-", maxOSWidth+2) + "+" + strings.Repeat("-", maxAllowedIPsWidth+2) + "+" + strings.Repeat("-", maxCurAddrWidth+2) + "+--------+")
-}
-
-func max(x, y int) int {
-	if x > y {
-		return x
-	}
-
-	return y
 }

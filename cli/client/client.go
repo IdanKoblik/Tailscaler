@@ -1,8 +1,8 @@
 package client
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -16,23 +16,22 @@ type Node struct {
 	Active     string   `json:"Active"`
 }
 
-func CreateRequest(apiURL string) ([]byte, error) {
+func createRequest(apiURL string) ([]byte, error) {
 	resp, err := http.Get(apiURL)
 	if err != nil {
-		fmt.Printf("Failed to make request to %s: %s\n", apiURL, err)
+		log.Fatalf("Failed to make request to %s: %s\n", apiURL, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Failed to read response body: %s\n", err)
+		log.Fatalf("Failed to read response body: %s\n", err)
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("API request failed with status code: %d\n", resp.StatusCode)
-		fmt.Println(string(body))
+		log.Fatalf("API request failed with status code: %d\n", resp.StatusCode)
 		return nil, err
 	}
 

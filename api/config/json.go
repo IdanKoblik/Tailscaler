@@ -11,7 +11,7 @@ type Config struct {
 	Port string `json:"port"`
 }
 
-func GetURL() (string, error) {
+func GetApiURL() (string, error) {
 	file, err := os.ReadFile("config.json")
 	if err != nil {
 		log.Fatal("Error reading config file: ", err)

@@ -17,7 +17,7 @@ func main() {
 	router.HandleFunc("/tailscale/get_users", handler.GetAllUsers).Methods(http.MethodGet)
 	router.HandleFunc("/tailscale/find_user_by_name/{HostName}", handler.FindByHostName).Methods(http.MethodGet)
 
-	addr, err := config.GetURL()
+	addr, err := config.GetApiURL()
 	if err != nil {
 		log.Fatalf("Error getting api url: %v\n", err)
 		return

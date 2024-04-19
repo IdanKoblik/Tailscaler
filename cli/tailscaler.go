@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"tailscaler/client"
 	"tailscaler/utils"
 )
 
@@ -30,14 +32,26 @@ func main() {
 
 	switch option {
 	case 1:
-		utils.GetUsers()
+		nodes, err := client.GetNodes()
+		if err != nil {
+			log.Fatalf("Error getting nodes: %v\n", err)
+			return
+		}
+
+		utils.PrintTable(nodes)
 		break
 	case 2:
 		fmt.Println("Please enter hostname to lookup: ")
 		var hostName string
 		_, _ = fmt.Scanln(&hostName)
 
-		utils.LookupUser(hostName)
+		node, err := client.LookupNode(hostName)
+		if err != nil {
+			log.Fatalf("Error getting node: %v\n", err)
+			return
+		}
+
+		utils.PrintTable(node)
 	case 3:
 		break
 	}
