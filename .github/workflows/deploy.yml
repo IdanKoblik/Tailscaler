@@ -68,6 +68,9 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Debug Create Release Output
+        run: echo "${{ steps.create_release.outputs }}"
+
       - name: Upload Release Artifact
         uses: actions/upload-release-asset@v1
         env:
