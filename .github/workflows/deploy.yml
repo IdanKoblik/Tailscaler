@@ -136,7 +136,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ jobs.create-release.outputs.upload_url }}
           asset_path: ./cli-binaries.zip
           asset_name: cli-binaries-${{ github.run_number }}.zip
           asset_content_type: application/zip
