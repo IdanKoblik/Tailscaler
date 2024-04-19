@@ -43,6 +43,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
+          token: ${{ github.token }}
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           draft: false
