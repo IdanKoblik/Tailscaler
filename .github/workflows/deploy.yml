@@ -50,8 +50,9 @@ jobs:
 
       - name: Upload Release Artifact
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./api/api
           asset_name: api-${{ github.ref_name }}-${{ github.run_id }}.zip
@@ -59,8 +60,9 @@ jobs:
 
       - name: Upload CLI Release Artifact
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./cli/cli
           asset_name: cli-${{ github.ref_name }}-${{ github.run_id }}.zip
