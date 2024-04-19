@@ -121,12 +121,18 @@ jobs:
       - name: Zip CLI binaries
         run: zip cli-binaries.zip ./cli/cli.exe ./cli/cli_mac ./cli/cli_linux
 
+      - name: Debug API Binary Files
+        run: ls -la ./api
+
+      - name: Debug CLI Binary Files
+        run: ls -la ./cli
+
       - name: Upload API Release Artifact
         uses: actions/upload-artifact@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          name: artifacts
+          name: api-artifacts  # Unique name for API artifacts
           path: ./api-binaries.zip
 
       - name: Upload CLI Release Artifact
@@ -134,5 +140,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          name: artifacts
+          name: cli-artifacts  # Unique name for CLI artifacts
           path: ./cli-binaries.zip
