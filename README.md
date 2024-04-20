@@ -59,6 +59,3 @@ file with the next information:
 | :-------- | :------- |:--------------------------------------|
 | `hostName`      | `string` | **Required**. Tailscale node hostname |
 ***
-
-#### Routing system
-![image](https://raw.githubusercontent.com/IdanKoblik/Tailscaler/main/assets/router.png?token=GHSAT0AAAAAACOISCMXKZAUIAG3SCSX4RUAZRCIARQ)
